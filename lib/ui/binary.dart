@@ -2,61 +2,89 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class LinearSearch extends StatefulWidget {
-  const LinearSearch({Key? key}) : super(key: key);
+class BinarySearch extends StatefulWidget {
+  const BinarySearch({Key? key}) : super(key: key);
 
   @override
-  State<LinearSearch> createState() => _LinearSearchState();
+  State<BinarySearch> createState() => _BinarySearchState();
 }
 
-class _LinearSearchState extends State<LinearSearch> {
-  int _current = -1;
-  bool _started = false;
+class _BinarySearchState extends State<BinarySearch> {
+  int middle = -1;
+  int a = -1;
+  int b = -1;
   bool _found = false;
   bool _notFound = false;
   int _value = -1;
-  final list = [1, 3, 5, 12, 2, 156, 23, 45, 22, 56, 33, 21, 99, 122, 134, 4];
+  final initialList = [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+  ];
+  List<int> list = [];
+  bool _started = false;
   void start() async {
     _controllerCenter.stop();
     setState(() {
       _found = false;
-      _notFound = false;
       _started = true;
+      _notFound = false;
     });
-    for (var i = 0; i < list.length; i++) {
-      if (_found) return;
-      await Future.delayed(const Duration(seconds: 1), () {
+    a = 0;
+    b = initialList.length - 1;
+    middle = (a + b) ~/ 2;
+
+    setState(() {});
+    while (initialList[middle] != _value && a != b) {
+      await Future.delayed(const Duration(seconds: 4), () {
         if (mounted) {
           setState(() {
-            _current = list[i];
-            if (list[i] == _value) {
-              _controllerCenter.play();
-              _found = true;
-              _started = false;
-              return;
-            }
-            if (i == list.length - 1) {
-              setState(() {
-                _notFound = true;
-                _started = false;
-              });
-            }
+            //list = initialList.sublist(a, b);
           });
         }
+      });
+      if (_value > initialList[middle]) {
+        a = middle + 1;
+      } else if (_value < initialList[middle]) {
+        b = middle - 1;
+      }
+      middle = (a + b) ~/ 2;
+    }
+    if (initialList[middle] != _value) {
+      setState(() {
+        _notFound = true;
+        _started = false;
+      });
+    } else {
+      setState(() {
+        _found = true;
+        _started = false;
+        _controllerCenter.play();
       });
     }
   }
 
-  String _text = "";
   late ConfettiController _controllerCenter;
-  late ConfettiController _controllerCenterRight;
-  late ConfettiController _controllerCenterLeft;
-  late ConfettiController _controllerTopCenter;
-  late ConfettiController _controllerBottomCenter;
 
   @override
   void initState() {
     super.initState();
+    list = [...initialList];
     _controllerCenter =
         ConfettiController(duration: const Duration(seconds: 10));
   }
@@ -64,10 +92,6 @@ class _LinearSearchState extends State<LinearSearch> {
   @override
   void dispose() {
     _controllerCenter.dispose();
-    _controllerCenterRight.dispose();
-    _controllerCenterLeft.dispose();
-    _controllerTopCenter.dispose();
-    _controllerBottomCenter.dispose();
     super.dispose();
   }
 
@@ -77,7 +101,7 @@ class _LinearSearchState extends State<LinearSearch> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: const Color(0xff2f243a),
-        title: const Text('Linear search'),
+        title: const Text('Binary search'),
       ),
       body: Center(
         child: Padding(
@@ -114,16 +138,6 @@ class _LinearSearchState extends State<LinearSearch> {
                             fontSize: 30),
                       ),
                     ),
-                  if (_text.isNotEmpty)
-                    Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Text(
-                          _text,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                              fontSize: 30),
-                        )),
                   if (_value != -1 && !_notFound && !_found && _started)
                     Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -152,32 +166,66 @@ class _LinearSearchState extends State<LinearSearch> {
                       )),
                     ),
                   Wrap(
-                    children: list
-                        .map((e) => Card(
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 500),
-                                width: 50,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.all(
-                                      Radius.circular(_current == e ? 5 : 0)),
-                                  color: _found && e == _value
-                                      ? Colors.green
-                                      : _current == e
-                                          ? Colors.blue
-                                          : Colors.white,
-                                ),
-                                child: Center(
-                                    child: Text(e.toString(),
-                                        style: TextStyle(
-                                            fontSize: 20,
-                                            color: _current == e
-                                                ? Colors.white
-                                                : Colors.black,
-                                            fontWeight: FontWeight.bold))),
+                    children: list.asMap().entries.map((entry) {
+                      final e = entry.value;
+                      final index = entry.key;
+                      return Stack(
+                        children: [
+                          Card(
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 500),
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                border: isValue(e, middle)
+                                    ? Border.all(color: Colors.black, width: 4)
+                                    : isValue(e, a) || isValue(e, b)
+                                        ? Border.all(
+                                            color: Colors.red, width: 4)
+                                        : null,
+                                color: _found && e == _value
+                                    ? Colors.green
+                                    : isValue(e, middle)
+                                        ? Colors.blue
+                                        : Colors.white,
                               ),
-                            ))
-                        .toList(),
+                              child: Center(
+                                  child: Text(e.toString(),
+                                      style: TextStyle(
+                                          fontSize: 20,
+                                          color: middle > -1 &&
+                                                  initialList[middle] == e
+                                              ? Colors.white
+                                              : Colors.black,
+                                          fontWeight: FontWeight.bold))),
+                            ),
+                          ),
+                          if (isValue(e, a) || isValue(e, b))
+                            Positioned(
+                                top: 6,
+                                left: 6,
+                                child: Container(
+                                  color: Colors.black.withOpacity(0.5),
+                                  padding: const EdgeInsets.all(5),
+                                  child: Text(
+                                      isValue(e, a)
+                                          ? "A"
+                                          : isValue(e, b)
+                                              ? "B"
+                                              : "",
+                                      style: const TextStyle(
+                                          fontSize: 10, color: Colors.white)),
+                                )),
+                          if (index < a || index > b && _started)
+                            Positioned(
+                                child: Icon(
+                              Icons.close,
+                              color: Colors.red,
+                              size: 60,
+                            )),
+                        ],
+                      );
+                    }).toList(),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -192,7 +240,7 @@ class _LinearSearchState extends State<LinearSearch> {
                             setState(() {
                               _found = false;
                               _notFound = false;
-                              _current = -1;
+                              middle = -1;
                               _value = int.parse(value);
                             });
                           },
@@ -222,5 +270,11 @@ class _LinearSearchState extends State<LinearSearch> {
         ),
       ),
     );
+  }
+
+  bool isFound() => _found;
+  bool isValue(int value, int toCompare) {
+    if (toCompare == -1) return false;
+    return initialList[toCompare] == value;
   }
 }

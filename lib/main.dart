@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:search/main_screen.dart';
 import 'package:search/ui/linear.dart';
 
 void main() {
@@ -14,9 +15,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
+        primaryColor: Colors.black,
         fontFamily: GoogleFonts.poppins().fontFamily,
       ),
-      home: const LinearSearch(),
+      home: const Home(),
     );
   }
 }
